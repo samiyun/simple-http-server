@@ -50,7 +50,6 @@ public class HttpServer {
             // TODO we would write - we'll only do this
             // define the page to send to the browser
             String html = "<html><head><title>Simple Java HTTP Server</title></head><body><h1>This page was served using this http server.</h1></body></html>";
-
             // we send two special characters - the carriage return and the line feed
 
             final String CRLF = "\r\n"; // typically uses bytes (we'll use this in the future (13, 10 - ascii)
