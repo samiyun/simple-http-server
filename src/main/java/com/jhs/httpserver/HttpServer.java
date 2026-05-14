@@ -44,8 +44,9 @@ public class HttpServer {
             serverListenerThread.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
-//            TODO handle later
         }
-
+        /**
+         * we'll add  RFCs
+         */
     }
 }
