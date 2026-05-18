@@ -12,30 +12,65 @@ public class HttpParser {
     private final static Logger LOGGER = LoggerFactory.getLogger(HttpParser.class);
     private static final int SP = 0x20; /* 32 */
     private static final int CR = 0x0D; /* 13 */
-    private static final int LF = 0x0AA; /* 10 */
+    private static final int LF = 0x0A; /* 10 */
 
-    public HttpRequest parseHttpRequest(InputStream inputStream) {
-        // the method wont be static so we can make a parser for each of the threads we're working on, though we can use the same method for every thread
+    public HttpRequest parseHttpRequest(InputStream inputStream) throws HttpParsingException {
+        // the method won't be static so we can make a parser for each of the threads we're working on, though we can use the same method for every thread
         InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.US_ASCII);
         HttpRequest request = new HttpRequest();
 
-        parseRequestLine(reader, request);
+        try {
+            parseRequestLine(reader, request);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         parseHeaders(reader, request);
         parseBody(reader, request);
 
         return request;
     }
-    private void parseRequestLine(InputStreamReader reader, HttpRequest request) throws IOException {
+    private void parseRequestLine(InputStreamReader reader, HttpRequest request) throws IOException, HttpParsingException {
+        StringBuilder processingDataBuffer = new StringBuilder();
+
+        boolean methodParsed = false;
+        boolean requestTargetParsed = false;
+
         int _byte;
         while((_byte = reader.read()) >= 0) {
             if(_byte == CR) { // first check if its Cr
                 _byte = reader.read(); // then if  its LF
                 if (_byte == LF) {
+                    LOGGER.debug("Request Line VERSION to Process: {}", processingDataBuffer.toString());
+                    if (!methodParsed || !requestTargetParsed) {
+                        throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+                    }
                     return;
                 }
             }
+            if (_byte == SP) {
+                // TODO Process Previous data
+                if (!methodParsed) {
+                    LOGGER.debug("Request Line METHOD to Process: {}", processingDataBuffer.toString());
+                    request.setMethod(processingDataBuffer.toString());
+                    methodParsed = true;
+                } else if (!requestTargetParsed) {
+                    LOGGER.debug("Request Line REQUEST TARGET to Process: {}", processingDataBuffer.toString());
+                    requestTargetParsed = true;
+                } else {
+                    throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+                }
+                processingDataBuffer.delete(0, processingDataBuffer.length());
+            } else {
+                // use a string buffer
+                processingDataBuffer.append((char) _byte);
+                if (!methodParsed) {
+                    if (processingDataBuffer.length() > HttpMethod.MAX_LENGTH) {
+                        // TODO Define MAX_LENGTH
+                        throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_501_NOT_IMPLEMENTED);
+                    }
+                }
+            }
         }
-
     }
     private void parseHeaders(InputStreamReader reader, HttpRequest request) {
     }

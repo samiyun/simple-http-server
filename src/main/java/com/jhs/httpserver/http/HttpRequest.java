@@ -2,18 +2,26 @@ package com.jhs.httpserver.http;
 // we will have some things in this class at the package level so any  other class in this package can use this class
 
 public class HttpRequest extends HttpMessage {
-    private String method; // this is a token and it is case sensitive
+    private HttpMethod method; // this is a token and it is case sensitive
     private String requestTarget;
     private String httpVersion;
 
     public HttpRequest() {
     }
 
-    public String getMethod() {
+    public HttpMethod getMethod() {
         return method;
     }
 
-    void setMethod(String method) {
-        this.method = method;
+    void setMethod(String methodName) throws HttpParsingException {
+        for (HttpMethod method: HttpMethod.values()){
+            if (methodName.equals(method.name())) {
+                this.method = method;
+                return;
+            }
+        }
+        throw new HttpParsingException(
+          HttpStatusCode.CLIENT_ERROR_501_NOT_IMPLEMENTED
+        );
     }
 }
