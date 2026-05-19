@@ -13,6 +13,10 @@ public class HttpRequest extends HttpMessage {
         return method;
     }
 
+    public String getRequestTarget() {
+        return requestTarget;
+    }
+
     void setMethod(String methodName) throws HttpParsingException {
         for (HttpMethod method: HttpMethod.values()){
             if (methodName.equals(method.name())) {
@@ -23,5 +27,12 @@ public class HttpRequest extends HttpMessage {
         throw new HttpParsingException(
           HttpStatusCode.CLIENT_ERROR_501_NOT_IMPLEMENTED
         );
+    }
+
+    public void setRequestTarget(String requestTarget) throws HttpParsingException {
+        if (requestTarget == null || requestTarget.length() == 0) {
+            throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_500_INTERNAL_SERVER_ERROR);
+        }
+        this.requestTarget = requestTarget;
     }
 }
