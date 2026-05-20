@@ -17,4 +17,27 @@ public class HttpVersionTest {
         assertNotNull(version);
         assertEquals(version, HttpVersion.HTTP_1_1);
     }
+
+    @Test
+    void getBestCompatibleVersionBadFormat() {
+        HttpVersion version = null;
+        try {
+            version = HttpVersion.getBestCompatibleVersion("http/1.1");
+            fail();
+        } catch (BadHttpVersionException e) {
+            return;
+        }
+    }
+
+    @Test
+    void getBestCompatibleVersionHigherVersion() {
+        HttpVersion version = null;
+        try {
+            version = HttpVersion.getBestCompatibleVersion("HTTP/1.2");
+            assertNotNull(version);
+            assertEquals(version, HttpVersion.HTTP_1_1);
+        } catch (BadHttpVersionException e) {
+            fail();
+        }
+    }
 }
